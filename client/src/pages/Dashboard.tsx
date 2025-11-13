@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import StudentProfile from "../components/StudentProfile";
 
 const Dashboard = () => {
-  const { user, logout, teacher } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
 
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [filter, setFilter] = useState("");
