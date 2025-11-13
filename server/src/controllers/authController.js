@@ -1,25 +1,26 @@
-import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 export const signup = async (req, res) => {
   try {
     const { name, email, password, role, teacherId } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: "Name is required" });
-    }
+    if (!name) return res.status(400).json({ message: "Name is required" });
 
     if (role === "student" && !teacherId) {
-      return res.status(400).json({ message: "teacherId is required for students" });
+      return res.status(400).json({ message: "teacherId is required" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: "Email already used" });
+
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email,
-      passwordHash: hashed,
+      passwordHash,
       role,
       teacherId: role === "student" ? teacherId : null
     });
@@ -30,7 +31,6 @@ export const signup = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -38,8 +38,8 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -47,7 +47,7 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    res.json({ token, user });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
