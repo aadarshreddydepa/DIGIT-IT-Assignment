@@ -1,21 +1,30 @@
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+
+  // NEW: track who created the task
+  creatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
 
   title: { type: String, required: true },
-
   description: { type: String },
-
   dueDate: { type: Date },
 
   progress: {
     type: String,
     enum: ["not-started", "in-progress", "completed"],
-    default: "not-started"
+    default: "not-started",
   },
 
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 export default mongoose.model("Task", taskSchema);

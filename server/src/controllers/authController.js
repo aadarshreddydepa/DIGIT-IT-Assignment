@@ -47,8 +47,17 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({ token, user });
+    // Add teacher details for student
+    let teacher = null;
+
+    if (user.role === "student" && user.teacherId) {
+      teacher = await User.findById(user.teacherId).select("name email");
+    }
+
+    res.json({ token, user, teacher });
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+

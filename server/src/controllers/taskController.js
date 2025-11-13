@@ -59,7 +59,7 @@ export const createTask = async (req, res) => {
 
     let userId = id;
 
-    // Teacher assigning task to student
+    // Teacher assigning to student
     if (role === "teacher" && req.body.userId) {
       const student = await User.findOne({
         _id: req.body.userId,
@@ -73,50 +73,82 @@ export const createTask = async (req, res) => {
 
     const task = await Task.create({
       ...req.body,
-      userId
+      userId,
+      creatorId: id, // NEW
     });
 
     res.json(task);
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 export const updateTask = async (req, res) => {
   try {
     const { id, role } = req.user;
-    const task = await Task.findById(req.params.id);
 
+    const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
+    // RULES:
     const isOwner = task.userId.toString() === id;
+    const isCreator = task.creatorId.toString() === id;
 
-    if (!isOwner)
+    let isTeacherOfStudent = false;
+
+    if (role === "teacher") {
+      const student = await User.findOne({
+        _id: task.userId,
+        teacherId: id,
+      });
+      if (student) isTeacherOfStudent = true;
+    }
+
+    if (!(isOwner || isCreator || isTeacherOfStudent)) {
       return res.status(403).json({ message: "Not authorized to modify" });
+    }
 
     Object.assign(task, req.body);
     await task.save();
-
     res.json(task);
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 export const deleteTask = async (req, res) => {
   try {
-    const { id } = req.user;
-    const task = await Task.findById(req.params.id);
+    const { id, role } = req.user;
 
+    const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
-    if (task.userId.toString() !== id)
+    const isOwner = task.userId.toString() === id;
+    const isCreator = task.creatorId.toString() === id;
+
+    let isTeacherOfStudent = false;
+
+    if (role === "teacher") {
+      const student = await User.findOne({
+        _id: task.userId,
+        teacherId: id,
+      });
+      if (student) isTeacherOfStudent = true;
+    }
+
+    if (!(isOwner || isCreator || isTeacherOfStudent)) {
       return res.status(403).json({ message: "Not authorized" });
+    }
 
     await task.deleteOne();
-
     res.json({ message: "Deleted" });
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
