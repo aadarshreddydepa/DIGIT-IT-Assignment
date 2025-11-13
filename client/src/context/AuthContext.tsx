@@ -1,16 +1,18 @@
-import { createContext, useState, type ReactNode } from "react";
-import { type IUser } from "../types/User";
+import { createContext, useState,type ReactNode } from "react";
+import type { IUser } from "../types/User";
 
 interface AuthContextType {
   user: IUser | null;
   token: string | null;
-  login: (payload: { token: string; user: IUser }) => void;
+  teacher: IUser | null;
+  login: (payload: { token: string; user: IUser; teacher?: IUser | null }) => void;
   logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
+  teacher: null,
   login: () => {},
   logout: () => {},
 });
@@ -24,9 +26,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.getItem("token")
   );
 
-  const login = (payload: { token: string; user: IUser }) => {
+  const [teacher, setTeacher] = useState<IUser | null>(
+    JSON.parse(localStorage.getItem("teacher") || "null")
+  );
+
+  const login = (payload: { token: string; user: IUser; teacher?: IUser | null }) => {
     localStorage.setItem("token", payload.token);
     localStorage.setItem("user", JSON.stringify(payload.user));
+
+    if (payload.teacher) {
+      localStorage.setItem("teacher", JSON.stringify(payload.teacher));
+      setTeacher(payload.teacher);
+    } else {
+      localStorage.removeItem("teacher");
+      setTeacher(null);
+    }
 
     setToken(payload.token);
     setUser(payload.user);
@@ -36,10 +50,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.clear();
     setToken(null);
     setUser(null);
+    setTeacher(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, teacher, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

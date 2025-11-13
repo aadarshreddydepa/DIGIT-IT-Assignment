@@ -1,16 +1,19 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axiosInstance";
-import type { ITask } from "../types/Task";
+import {type ITask } from "../types/Task";
+import { type IUser } from "../types/User";
+
 import TaskCard from "../components/TaskCard";
 import TaskForm from "../components/TaskForm";
 import EditTaskModal from "../components/EditTaskModal";
 import StudentList from "../components/StudentList";
 import SkeletonCard from "../components/SkeletonCard";
 import toast from "react-hot-toast";
+import StudentProfile from "../components/StudentProfile";
 
 const Dashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, teacher } = useContext(AuthContext);
 
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [filter, setFilter] = useState("");
@@ -24,6 +27,9 @@ const Dashboard = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const [teacherInfo, setTeacherInfo] = useState<IUser | null>(null);
+
+  // Fetch tasks with filters + pagination
   const loadTasks = () => {
     setLoading(true);
 
@@ -45,6 +51,16 @@ const Dashboard = () => {
     loadTasks();
   }, [filter, page, studentFilter]);
 
+  // Fetch assigned teacher info for student
+  useEffect(() => {
+    if (user?.role === "student" && user.teacherId) {
+      api
+        .get("/teachers/" + user.teacherId)
+        .then((res) => setTeacherInfo(res.data))
+        .catch(() => {});
+    }
+  }, []);
+
   const handleDelete = (id: string) => {
     api
       .delete(`/tasks/${id}`)
@@ -61,21 +77,36 @@ const Dashboard = () => {
       {/* LEFT SIDEBAR (Teacher only) */}
       {user?.role === "teacher" && (
         <div className="hidden md:block w-64 mr-4">
-          <StudentList onSelect={(id) => {
-            setStudentFilter(id);
-            setPage(1);
-          }} />
+          <StudentList
+            onSelect={(id) => {
+              setStudentFilter(id);
+              setPage(1);
+            }}
+          />
         </div>
       )}
+{user?.role === "student" && (
+  <div className="hidden md:block w-64 mr-4">
+    <StudentProfile />
+  </div>
+)}
 
       {/* MAIN CONTENT */}
       <div className="flex-1">
 
         {/* TOP BAR */}
         <div className="flex justify-between items-center bg-white p-4 shadow-md rounded-lg mb-5">
-          <h1 className="text-xl font-bold">
-            Welcome, {user?.name} ({user?.role})
-          </h1>
+          <div>
+            <h1 className="text-xl font-bold">
+              Welcome, {user?.name} ({user?.role})
+            </h1>
+
+            {user?.role === "student" && teacherInfo && (
+              <p className="text-gray-600 text-sm">
+                Teacher: <span className="font-medium">{teacherInfo.name}</span>
+              </p>
+            )}
+          </div>
 
           <button
             onClick={logout}
@@ -87,7 +118,6 @@ const Dashboard = () => {
 
         {/* FILTERS */}
         <div className="flex justify-between mb-4 bg-white p-4 rounded-lg shadow-md">
-
           <select
             className="p-2 border rounded-md"
             onChange={(e) => {
@@ -106,7 +136,6 @@ const Dashboard = () => {
           >
             + New Task
           </button>
-
         </div>
 
         {/* TASK GRID */}
@@ -149,6 +178,7 @@ const Dashboard = () => {
             </button>
           </div>
         )}
+
       </div>
 
       {/* CREATE TASK MODAL */}
@@ -172,7 +202,8 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-            {/* EDIT TASK MODAL */}
+
+      {/* EDIT TASK MODAL */}
       {editTask && (
         <EditTaskModal
           task={editTask}
