@@ -256,6 +256,3 @@ Engineering Student & Full-Stack Developer
 Passionate about MERN, AI tools, and scalable web systems.
 
 ---
-
-# ✨ End of README
-Just let me know!
