@@ -1,180 +1,173 @@
-# 📘 **EdTech Task Manager — MERN + TypeScript + Tailwind**
+# 🎓 **EdTech Task Manager — MERN + TypeScript + TailwindCSS**
 
-A role-based learning task manager built for **teachers** and **students**, supporting real-world assignment workflows, progress tracking, RBAC permissions, and a clean, modern UI.
+A full-stack Learning Management Task System that enables **teachers** to create and assign tasks to students, and allows **students** to manage, update, and track their learning progress.
 
-This project delivers a complete **Learning Management System (LMS) Task Module** with:
-
-✔ Authentication
-✔ Teacher ↔ Student mapping
-✔ Task assignment
-✔ Progress tracking
-✔ Role-based permissions
-✔ Task insights dashboard
-✔ Responsive UI
+This project includes complete **role-based access control (RBAC)**, analytics, authentication, and a clean dashboard UI built with React, TypeScript, and Tailwind.
 
 ---
 
-# 🚀 **Live Tech Demo (Key Features)**
+## 📂 Project Structure
 
-### 👨‍🏫 **For Teachers**
+```
+/client     → React + TypeScript frontend  
+/server     → Node.js + Express + MongoDB backend
+```
 
-* Assign tasks to students
-* Update or delete tasks **created by themselves**
-* View all tasks belonging to their students
-* Student list sidebar
-* Paginated tasks view (10 per page)
-* Filter tasks: overdue, due this week
+---
 
-### 👨‍🎓 **For Students**
+# 🚀 Features
 
-* Update tasks assigned by teachers
-* Create personal tasks
-* Edit or delete tasks assigned to themselves
-* View their teacher’s name
-* See analytics panel:
+## 👨‍🏫 **Teacher Features**
 
-  * Total tasks
-  * Completed
-  * Pending
+* Create tasks for students
+* View tasks for **all students assigned to them**
+* Update/delete **only tasks they created**
+* Side panel with list of students
+* Pagination on teacher task view (10 per page)
+* Filters:
+
   * Overdue
-
-### 🖥️ **Frontend**
-
-* React + TypeScript
-* TailwindCSS UI
-* Beautiful card layout
-* Smooth modals for Create/Edit
-* Toast notifications
-* Fully responsive layout
-
-### 🔐 **Backend**
-
-* Node.js + Express
-* MongoDB + Mongoose
-* JWT Auth
-* Robust RBAC enforcement
-* Clean controllers, routes, middleware
+  * Due this week
 
 ---
 
-# 🏗️ **Architecture Overview**
+## 👨‍🎓 **Student Features**
 
-```
-/client
-  ├── src
-  │   ├── pages
-  │   ├── components
-  │   ├── context
-  │   ├── api
-  │   ├── types
-  │   └── App.tsx
+* Create personal tasks
+* Update or delete **tasks assigned to them** (even if created by teacher)
+* View teacher name on dashboard + student profile pane
+* Analytics overview:
 
-/server
-  ├── src
-  │   ├── controllers
-  │   ├── middleware
-  │   ├── models
-  │   ├── routes
-  │   └── index.js
-```
+  * total tasks
+  * completed
+  * pending
+  * overdue
 
 ---
 
-# ⚙️ **Tech Stack**
+## 🔐 Authentication & RBAC
 
-### **Frontend**
+### Signup
+
+* Teacher signs up normally
+* Student must select an existing teacher
+
+### Login
+
+* Backend returns:
+
+  * JWT
+  * user info
+  * teacher info (for students)
+
+### Role-Based Logic (Important)
+
+#### Students:
+
+* Can update tasks where `userId === studentId`
+* Can **update teacher-created tasks** assigned to them
+* Cannot modify:
+
+  * userId
+  * creatorId
+* Cannot edit other students' tasks
+
+#### Teachers:
+
+* Can update/delete **only tasks they created**
+* Can assign tasks to any student mapped to them
+* Cannot edit tasks created by students
+
+---
+
+## 🏗 Technology Stack
+
+### Frontend
 
 * React 19
 * TypeScript
-* Vite
-* TailwindCSS
-* Axios
 * React Router
+* Axios
+* TailwindCSS
+* Vite
 * React Hot Toast
 
-### **Backend**
+### Backend
 
 * Node.js
 * Express.js
-* MongoDB (Mongoose ORM)
-* JWT Authentication
-* bcrypt password hashing
+* MongoDB + Mongoose
+* JWT authentication
+* bcrypt for hashing
 * dotenv
 
 ---
 
-# 🛡️ **Authentication & Security**
+# 📦 Installation & Setup
 
-### **Signup**
+### Clone the repository
 
-* Students select a teacher
-* Teachers do not select a teacher
-
-### **Login**
-
-* Server returns:
-
-  * JWT Token
-  * User object
-  * Teacher object (for students)
-
-### **Auth Middleware**
-
-Every protected route checks:
-
-* JWT validity
-* Extracts `id` & `role`
-* Injects into `req.user`
+```
+git clone https://github.com/aadarshreddydepa/DIGIT-IT-Assignment.git
+cd DIGIT-IT-Assignment
+```
 
 ---
 
-# 🔐 **RBAC Logic (Role-Based Permissions)**
+## 🖥 Backend Setup (server/)
 
-### 👨‍🏫 **Teacher**
+```
+cd server
+npm install
+```
 
-Can update/delete:
+Create `.env`:
 
-* Tasks **created by them**
+```
+MONGO_URI=<your_mongodb_atlas_uri>
+JWT_SECRET=<your_secret>
+```
 
-Cannot update tasks:
+Start server:
 
-* Created by student
+```
+npm run dev
+```
 
-Can view:
+Runs at:
 
-* Tasks of all students assigned to them
-* Tasks they created
-
-### 👨‍🎓 **Student**
-
-Can update/delete:
-
-* Tasks assigned **to them**, even if created by the teacher
-* Tasks created by themselves
-
-Cannot update:
-
-* Tasks belonging to other students
-
-### 🚨 Protected Fields
-
-Cannot be modified:
-
-* `creatorId`
-* `userId`
+```
+http://localhost:5001
+```
 
 ---
 
-# 📡 **API Endpoints**
+## 🌐 Frontend Setup (client/)
 
-## **Auth**
+```
+cd client
+npm install
+npm run dev
+```
+
+Runs at:
+
+```
+http://localhost:5173
+```
+
+---
+
+# 🔄 API Endpoints
+
+### Auth
 
 ```
 POST /auth/signup
 POST /auth/login
 ```
 
-## **Tasks**
+### Tasks
 
 ```
 GET    /tasks
@@ -183,136 +176,86 @@ PUT    /tasks/:id
 DELETE /tasks/:id
 ```
 
-### Query Params for GET:
+### Teachers
 
 ```
-?filter=overdue     // tasks past due
-?filter=thisWeek    // due next 7 days
-?studentId=<id>     // teacher filtering by student
-?page=1             // teacher pagination
+GET /teachers          (all teachers)
+GET /teachers/:id      (teacher details)
 ```
 
 ---
 
-# 📦 **Environment Variables**
+# 🧭 Teacher Task View Logic (Important)
 
-Create `/server/.env`:
+Teacher can see:
 
-```
-MONGO_URI=mongodb+srv://...
-JWT_SECRET=supersecret123
-PORT=5001
-```
+1. Tasks they created
+2. Tasks belonging to students assigned to them
 
----
+Teacher can **edit/delete only tasks created by them**.
 
-# 🧪 **How to Run the Project**
+This ensures correct LMS-style authority levels and prevents privilege escalation.
 
 ---
 
-## **Backend Setup**
+# 📊 Student Profile Panel
 
-```bash
-cd server
-npm install
-npm run dev
-```
+Students can see:
 
-Server runs on:
-
-```
-http://localhost:5001
-```
+* Name
+* Teacher assigned
+* Total tasks
+* Completed, pending, overdue
+* Trend-based insights
 
 ---
 
-## **Frontend Setup**
+# 🎥 Video Demonstration
 
-```bash
-cd client
-npm install
-npm run dev
-```
-
-Frontend runs on:
+✔ Walkthrough recorded and included as required
+✔ Video link (Drive/YouTube) to be added here:
 
 ```
-http://localhost:5173
+<Video Link Here>
 ```
 
 ---
 
-# 🧭 **Core User Flows**
+# 📌 Known Issues (if any)
+
+* Serverless deployments require CORS tuning
+* MongoDB Atlas must whitelist public IP or use 0.0.0.0/0
+* No file upload feature yet
+* Teacher cannot reassign task after creation (could be added)
 
 ---
 
-## 👨‍🏫 Teacher Flow
+# 💡 Suggestions for Future Improvements
 
-1. Login
-2. Sidebar shows list of students
-3. Create tasks and assign to any student
-4. Edit/delete tasks they created
-5. View all tasks from all assigned students
-6. Paginate task list (10 per page)
-7. Filter overdue or weekly tasks
-
----
-
-## 👨‍🎓 Student Flow
-
-1. Login
-2. Dashboard shows:
-
-   * Teacher name
-   * Task analytics
-   * Tasks created by teacher or self
-3. Update/edit/delete own tasks
-4. Edit tasks assigned by teacher to them
+* Add task priority (High / Medium / Low)
+* Add dark mode
+* Add real-time notifications (Socket.io)
+* Add email reminders for overdue tasks
+* Add Calendar view for tasks
+* Add admin role
+* Add teacher-student messaging
 
 ---
 
-# 🎨 UI/UX Capabilities
+# 🤖 AI Assistance Disclosure
 
-### ✔ Modern card-based layout
-
-### ✔ Soft shadows
-
-### ✔ Blue-accent theme
-
-### ✔ Smooth modals
-
-### ✔ Responsive grid
-
-### ✔ Sidebar profile + metrics
-
-### ✔ Hover animations
-
-### ✔ Skeleton loading states
+Some parts of this project (explanations, debugging assistance, code scaffolding, documentation, README creation) were assisted using **ChatGPT**, under the direction and decision-making of the developer (Aadarsh).
+All architectural decisions, testing, debugging, and final implementation were done manually by the developer.
 
 ---
 
-# 🛠 Future Enhancements (Optional)
+# 🧑‍💻 Developer
 
-* Task priority (P1 / P2 / P3)
-* Dark mode switch
-* Calendar view
-* Chat between teacher ↔ student
-* File attachments for assignments
-* Student progress graph (Chart.js)
-* Notification system
+**Aadarsh Reddy Depa**
+Engineering Student & Full-Stack Developer
+Passionate about MERN, AI tools, and scalable web systems.
 
 ---
 
-# 🧑‍💻 **Developer: Aadarsh**
-
-This project demonstrates:
-
-* Complete MERN mastery
-* Real-world RBAC implementation
-* Clean folder architecture
-* Strong frontend patterns
-* Backend API engineering
-* Authentication/Authorization depth
-
----
-
+# ✨ End of README
+Just let me know!
