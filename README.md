@@ -210,17 +210,6 @@ Students can see:
 
 ---
 
-# 🎥 Video Demonstration
-
-✔ Walkthrough recorded and included as required
-✔ Video link (Drive/YouTube) to be added here:
-
-```
-<Video Link Here>
-```
-
----
-
 # 📌 Known Issues (if any)
 
 * Serverless deployments require CORS tuning
